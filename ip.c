@@ -259,12 +259,13 @@ cook(uint8_t flags, char *args) {
 	if (flags == HELP || *args == 0) { 
 		usage();
 		free(ip);
-		/* show the contents of the addr struct */
+		ip = NULL;
 		return(0);
 	} else { 
 		if (strchr(args, IP4SEP) == NULL && strchr(args, IP6SEP) == NULL) { 
 			fprintf(stderr,"%s: invalid IP address!\n",args);
 			free(ip);
+			ip = NULL;
 			return(1);
 		} 
 		if (strchr(args, IP4SEP) != NULL) { 
@@ -299,6 +300,7 @@ cook(uint8_t flags, char *args) {
 		}
 	}
 	free(ip);
+	ip = NULL; /* try to avoid dangling pointers */
 	return(0);
 }
 
@@ -322,7 +324,7 @@ hostaddrs(addr *addr) {
 				}
 			}
 		}
-	} else if (addr->class == 16) {
+	} else if (addr->class == 8) {
 		for (i = 0; (addr->ntwk[0] + i) <= addr->bdst[0]; i++) {
 			for (j = 0; (addr->ntwk[1] + j) <= addr->bdst[1]; j++) {
 				for (k = 0; (addr->ntwk[2] + k) <= addr->bdst[2]; k++) {
@@ -408,7 +410,7 @@ printinfo(addr *addr) {
 				addr->ntwk[0],addr->ntwk[1],addr->ntwk[2],((addr->maskbits == 32) ? addr->addr[3] : (addr->ntwk[3] + 1)),
 				addr->bdst[0],addr->bdst[1],addr->bdst[2],((addr->maskbits == 32) ? addr->addr[3] : (addr->bdst[3] - 1))); 
 	} else { 
-		fprintf(stderr,"*addrinfo struct:\n"
+		fprintf(stderr,
 				"Address:\t%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n"
 				"Netmask:\t%u:%u:%u:%u:%u:%u:%u:%u\n"
 				"Hexmask:\t%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n"
@@ -416,7 +418,6 @@ printinfo(addr *addr) {
 				"Network:\t%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n"
 				"Broadcast:\t%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n"
 				"IP Range:\t%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X - %04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n"
-				"addr->class:\t%u\n"
 				"addr->maskbits:\t%u\n",
 				addr->addr[0],addr->addr[1],addr->addr[2],addr->addr[3],addr->addr[4],addr->addr[5],addr->addr[6],addr->addr[7],
 				/* netmask */
@@ -431,8 +432,6 @@ printinfo(addr *addr) {
 				/* range */
 				addr->ntwk[0],addr->ntwk[1],addr->ntwk[2],addr->ntwk[3],addr->ntwk[4],addr->ntwk[5],addr->ntwk[6],((addr->maskbits == 128) ? addr->addr[7] : (addr->ntwk[7] + 1)),
 				addr->bdst[0],addr->bdst[1],addr->bdst[2],addr->bdst[3],addr->bdst[4],addr->bdst[5],addr->bdst[6],((addr->maskbits == 128) ? addr->addr[7] : (addr->bdst[7] - 1)),
-				/* class */
-				addr->class,
 				/* maskbits */
 				addr->maskbits
 				);
@@ -445,7 +444,7 @@ static void
 usage(void) { 
 	fprintf(stdout,"%s: Simple IP address and netmask calculator\n",__progname);
 	fprintf(stdout,"\t-h\tThis help message\n"
-								 "\t-l\tList all possible host addresses, not just the range\n"
+								 "\t-l\tList all possible host addresses, not just the range (EXTREMELY verbose in larger networks)\n"
 								 "\n\tEx: ip 192.168.0.0/24\n"
 								 "\t    ip fe80::6a05:caff:fe3f:a9da/64\n");
 }
