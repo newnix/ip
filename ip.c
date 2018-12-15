@@ -33,7 +33,7 @@
 
 /* 
  * TODO: add logic to detect and expand '::' in ip6 addresses
- * TODO: add functionality for -l flag
+ * TODO: Look at more performant listing options
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +62,8 @@ typedef struct addrinfo {
 		uint16_t bdst[8];
 		uint8_t maskbits;
 		uint8_t class; /* this is indirectly used to determine if it's an ip4 or ip6 address, 
-											by telling us how many segments we should worry about */
+											by telling us how many segments we should worry about,
+											as such it should only be 4 or 8, at least for now */
 } addr;
 
 static int brdcast(addr *addr);
@@ -77,9 +78,9 @@ static void usage(void);
 int 
 main(int argc, char **argv) { 
 	uint8_t flags;
-	int ch;
+	int ch, ret;
 
-	ch = flags = 0; 
+	ch = flags = ret = 0; 
 
 	while ((ch = getopt(argc, argv, "hl")) != -1) { 
 		switch(ch) { 
@@ -99,11 +100,18 @@ main(int argc, char **argv) {
 		}
 	}
 
+	fprintf(stderr, "flags: %X\n", flags);
 	/* Parse the arguments */
 	if (argv[1] == NULL) {
 		usage();
+	} else {
+		/* this seems to have broken the cook() function test to run usage() */
+		for (argv += optind; (ret != HELP) && (*argv != NULL); argv++) {
+			ret = cook(flags, *argv);
+		}
+		/* this should return 0 in most cases */
+		return(ret);
 	}
-	return(cook(flags, argv[optind]));
 }
 
 static int
@@ -256,11 +264,11 @@ cook(uint8_t flags, char *args) {
 		return(1);
 	}
 
-	if (flags == HELP || *args == 0) { 
+	if (flags == HELP || args == NULL) { 
 		usage();
 		free(ip);
 		ip = NULL;
-		return(0);
+		return(HELP);
 	} else { 
 		if (strchr(args, IP4SEP) == NULL && strchr(args, IP6SEP) == NULL) { 
 			fprintf(stderr,"%s: invalid IP address!\n",args);
@@ -313,6 +321,7 @@ hostaddrs(addr *addr) {
 	 * If list is nonzero, we're going to print out every address in the range
 	 * otherwise, just print the summary, first host and last host
 	 * There's almost certainly a better way to do this, but I'm not sure what it'd be at this time
+	 * XXX: Also, get it to stop printing the network address of a given subnet
 	 */
 	if (addr->class == 4) { 
 		for(i = 0; (addr->ntwk[0] + i) <= addr->bdst[0]; i++) {
