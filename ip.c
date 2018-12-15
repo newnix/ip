@@ -100,7 +100,6 @@ main(int argc, char **argv) {
 		}
 	}
 
-	fprintf(stderr, "flags: %X\n", flags);
 	/* Parse the arguments */
 	if (argv[1] == NULL) {
 		usage();
