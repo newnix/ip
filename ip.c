@@ -43,6 +43,7 @@
 
 #define HELP 0x0002
 #define LISTHOSTS 0x0001
+#define NOHEADER 0x0004
 #define IP4SEP '.'
 #define IP6SEP ':'
 
@@ -82,7 +83,7 @@ main(int argc, char **argv) {
 
 	ch = flags = ret = 0; 
 
-	while ((ch = getopt(argc, argv, "hl")) != -1) { 
+	while ((ch = getopt(argc, argv, "hln")) != -1) { 
 		switch(ch) { 
 			case 'h':
 				/* 0000 0010 */
@@ -94,6 +95,13 @@ main(int argc, char **argv) {
 				flags ^= LISTHOSTS;
 				flags &= LISTHOSTS;
 				break;
+			case 'n':
+				if (flags >> 2 == NOHEADER) {
+					break;
+				} else {
+					flags ^= NOHEADER;
+					break;
+				}
 			default:
 				flags ^= flags;
 				break;
@@ -296,6 +304,12 @@ cook(uint8_t flags, char *args) {
 				brdcast(ip);
 				netwkaddr(ip);
 				printinfo(ip);
+				hostaddrs(ip);
+				break;
+			case LISTHOSTS | NOHEADER:
+				netmask(ip);
+				brdcast(ip);
+				netwkaddr(ip);
 				hostaddrs(ip);
 				break;
 			default:
