@@ -467,6 +467,7 @@ usage(void) {
 	fprintf(stdout,"%s: Simple IP address and netmask calculator\n",__progname);
 	fprintf(stdout,"\t-h\tThis help message\n"
 								 "\t-l\tList all possible host addresses, not just the range (EXTREMELY verbose in larger networks)\n"
+								 "\t-n\tDo not display the header (useful for scripting)\n"
 								 "\n\tEx: ip 192.168.0.0/24\n"
 								 "\t    ip fe80::6a05:caff:fe3f:a9da/64\n");
 }
