@@ -109,7 +109,7 @@ main(int argc, char **argv) {
 	}
 
 	/* Parse the arguments */
-	if (argv[1] == NULL) {
+	if (argv[1] == NULL || flags == HELP) {
 		usage();
 	} else {
 		/* this seems to have broken the cook() function test to run usage() */
@@ -123,7 +123,7 @@ main(int argc, char **argv) {
 
 static int
 brdcast (addr *addr) {	
-	int i; 
+	register int i; 
 
 	/* this is when all the host bits are set, so we should be able to just twiddle any leftover octets to get this working */
 	for (i = 0; i < addr->class; i++) { 
@@ -136,7 +136,7 @@ brdcast (addr *addr) {
 
 static int
 buildaddr(char *arg, addr *ip) { 
-	int i,j,k;
+	register int i,j,k;
 	char buf[5];
 	uint8_t hexval[4];
 
@@ -327,7 +327,7 @@ cook(uint8_t flags, char *args) {
 
 static int
 hostaddrs(addr *addr) {
-	uint8_t i, j, k, l;
+	register uint8_t i, j, k, l;
 
 	i = j = k = 0;
 	/*
@@ -376,7 +376,7 @@ hostaddrs(addr *addr) {
 
 static int
 netmask(addr *addr) { 
-	int i;
+	register int i;
 	uint16_t segsize,zero;
 
 	segsize = zero = 0;
@@ -401,7 +401,7 @@ netmask(addr *addr) {
 static int
 netwkaddr(addr *addr) { 
 	/* should pass in the netmask generated in netmask(), so it should be a simple bitwise operation */
-	int i; 
+	register int i; 
 
 	i = 0;
 
