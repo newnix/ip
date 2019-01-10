@@ -70,7 +70,7 @@ typedef struct addrinfo {
 static int brdcast(addr *addr);
 static int buildaddr(char *arg, addr *ip);
 static int cook(uint8_t flags, char *args);
-static int hostaddrs(addr *addr);
+static int hostaddrs(const addr *addr);
 static int netmask(addr *addr);
 static int netwkaddr(addr *addr);
 static int printinfo(addr *addr);
@@ -326,15 +326,18 @@ cook(uint8_t flags, char *args) {
 }
 
 static int
-hostaddrs(addr *addr) {
+hostaddrs(const addr *addr) {
 	register uint8_t i, j, k, l;
 
-	i = j = k = 0;
 	/*
 	 * If list is nonzero, we're going to print out every address in the range
 	 * otherwise, just print the summary, first host and last host
 	 * There's almost certainly a better way to do this, but I'm not sure what it'd be at this time
 	 * XXX: Also, get it to stop printing the network address of a given subnet
+	 *
+	 * XXX: These loops can almost certainly be better expressed as a singe loop, possibly two,
+	 * using the value of addr->class. Additionally, there may be a way to use bitwise operations 
+	 * to display the address possibilities.
 	 */
 	if (addr->class == 4) { 
 		for(i = 0; (addr->ntwk[0] + i) <= addr->bdst[0]; i++) {
@@ -351,10 +354,10 @@ hostaddrs(addr *addr) {
 			for (j = 0; (addr->ntwk[1] + j) <= addr->bdst[1]; j++) {
 				for (k = 0; (addr->ntwk[2] + k) <= addr->bdst[2]; k++) {
 					for (l = 0; (addr->ntwk[3] + l) <= addr->bdst[3]; l++) {
-						for (uint8_t m = 0; (addr->ntwk[4] + m) <= addr->bdst[4]; m++) {
-							for (uint8_t n = 0; (addr->ntwk[5] + n) <= addr->bdst[5]; n++) {
-								for (uint8_t o = 0; (addr->ntwk[6] + o) <= addr->bdst[6]; o++) {
-									for (uint8_t p = 0; (addr->ntwk[7] + p) <= addr->bdst[7] - 1; p++) {
+						for (register uint8_t m = 0; (addr->ntwk[4] + m) <= addr->bdst[4]; m++) {
+							for (register uint8_t n = 0; (addr->ntwk[5] + n) <= addr->bdst[5]; n++) {
+								for (register uint8_t o = 0; (addr->ntwk[6] + o) <= addr->bdst[6]; o++) {
+									for (register uint8_t p = 0; (addr->ntwk[7] + p) <= addr->bdst[7] - 1; p++) {
 										fprintf(stdout,"%04X:%04X:%04X:%04X:%04X:%04X:%04X:%04X\n",
 										addr->ntwk[0] + i, addr->ntwk[1] + j, addr->ntwk[2] + k, addr->ntwk[3] + l,
 										addr->ntwk[4] + m, addr->ntwk[5] + n, addr->ntwk[6] + o, addr->ntwk[7] + p);
@@ -379,7 +382,7 @@ netmask(addr *addr) {
 	register int i;
 	uint16_t segsize,zero;
 
-	segsize = zero = 0;
+	zero = 0;
 	/* assume a mask of all 1's if none was given */
 	if (addr->maskbits == 0) {
 		addr->maskbits = (addr->class == 4) ? 32 : 128;
@@ -402,8 +405,6 @@ static int
 netwkaddr(addr *addr) { 
 	/* should pass in the netmask generated in netmask(), so it should be a simple bitwise operation */
 	register int i; 
-
-	i = 0;
 
 	for (i = 0; i < addr->class; i++) { 
 		addr->ntwk[i] = (addr->addr[i] & addr->mask[i]);
