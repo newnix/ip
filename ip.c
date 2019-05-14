@@ -264,64 +264,53 @@ buildaddr(char *arg, addr *ip) {
 
 static int 
 cook(uint8_t flags, char *args) { 
-	addr *ip;
-
-	if ((ip = calloc((size_t)1, sizeof(ip))) == NULL) { 
-		fprintf(stderr,"ERR: Failed to allocate memory!\n");
-		return(1);
-	}
+	addr ip;
 
 	if (flags == HELP || args == NULL) { 
 		usage();
-		free(ip);
-		ip = NULL;
 		return(HELP);
 	} else { 
 		if (strchr(args, IP4SEP) == NULL && strchr(args, IP6SEP) == NULL) { 
 			fprintf(stderr,"%s: invalid IP address!\n",args);
-			free(ip);
-			ip = NULL;
 			return(1);
 		} 
 		if (strchr(args, IP4SEP) != NULL) { 
-			ip->class = 4; 
+			ip.class = 4; 
 		} else if (strchr(args, IP6SEP) != NULL) { 
-			ip->class = 8;
+			ip.class = 8;
 		}
 
-		buildaddr(args, ip);
+		buildaddr(args, &ip);
 
 		switch(flags) { 
 			case 0:
 				/* this should be the same as the default case, run all functions */
-				netmask(ip);
-				brdcast(ip);
-				netwkaddr(ip);
-				printinfo(ip);
+				netmask(&ip);
+				brdcast(&ip);
+				netwkaddr(&ip);
+				printinfo(&ip);
 				break;
 			case LISTHOSTS:
-				netmask(ip);
-				brdcast(ip);
-				netwkaddr(ip);
-				printinfo(ip);
-				hostaddrs(ip);
+				netmask(&ip);
+				brdcast(&ip);
+				netwkaddr(&ip);
+				printinfo(&ip);
+				hostaddrs(&ip);
 				break;
 			case LISTHOSTS | NOHEADER:
-				netmask(ip);
-				brdcast(ip);
-				netwkaddr(ip);
-				hostaddrs(ip);
+				netmask(&ip);
+				brdcast(&ip);
+				netwkaddr(&ip);
+				hostaddrs(&ip);
 				break;
 			default:
-				netmask(ip);
-				brdcast(ip);
-				netwkaddr(ip);
-				printinfo(ip);
+				netmask(&ip);
+				brdcast(&ip);
+				netwkaddr(&ip);
+				printinfo(&ip);
 				break;
 		}
 	}
-	free(ip);
-	ip = NULL; /* try to avoid dangling pointers */
 	return(0);
 }
 
