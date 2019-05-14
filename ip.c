@@ -266,7 +266,7 @@ static int
 cook(uint8_t flags, char *args) { 
 	addr *ip;
 
-	if ((ip = calloc(1, sizeof(*ip))) == NULL) { 
+	if ((ip = calloc((size_t)1, sizeof(ip))) == NULL) { 
 		fprintf(stderr,"ERR: Failed to allocate memory!\n");
 		return(1);
 	}
